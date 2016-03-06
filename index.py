@@ -44,7 +44,7 @@ class Fitness():
         json_data = open("param.json")
         data = json.load(json_data)
         self.items = data["items"]
-        self.pollInterval = self.items['pollInterval']
+        self.pollInterval = self.items[0]['pollInterval']
 
     def send_event(self, title, message, type, timestamp):
         sys.stdout.write('_bevent:{0}|m:{1}|t:{2}\n'.format(title, message, type, timestamp).decode('utf-8'))
