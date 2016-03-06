@@ -55,6 +55,14 @@
       "type": "string",
       "default": "",
       "required": true
+    },
+    {
+      "title": "Polling Interval",
+      "name": "pollInterval",
+      "description": "The polling interval (in milliseconds) to call the fitness collector",
+      "type": "integer",
+      "default": 300000,
+      "required": true
     }
   ]
 }

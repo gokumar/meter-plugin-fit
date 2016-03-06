@@ -39,14 +39,12 @@ def getDataTimes(dataInput):
 class Fitness():
     """Implements a meter plugin that gets current stock price and volume"""
 
-    def __init__(self, pollInterval):
-        self.pollInterval = pollInterval
-
     def load_parameters(self):
         """ Reads the meter plugin runtime parameters"""
         json_data = open("param.json")
         data = json.load(json_data)
         self.items = data["items"]
+        self.pollInterval = self.items['pollInterval']
 
     def send_event(self, title, message, type, timestamp):
         sys.stdout.write('_bevent:{0}|m:{1}|t:{2}\n'.format(title, message, type, timestamp).decode('utf-8'))
