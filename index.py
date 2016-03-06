@@ -75,7 +75,7 @@ class Fitness():
         self.load_parameters()
         self.send_event("Plugin started", "Starting fitness plugin", "info", int(time.time()))
         while True:
-            # Loop over the items and lookup the stock price and volume
+            # Loop over the items and lookup the fitness data
             for i in self.items:
                 client_id = i['client_id']
                 client_secret = i['client_secret']
@@ -90,7 +90,7 @@ class Fitness():
 
                 tomorrow = today + timedelta(1)
                 tomorrow_ns = int(tomorrow.strftime("%s")) * 1000 * 1000000
-                time_window = str(today_ns) + "-" + str(tomorrow_ns)
+                time_window = str(0) + "-" + str(tomorrow_ns)
 
                 data_sources = get_information_source_list(access_token)
                 source_list = get_summaries_for_data_sources(data_sources, time_window, access_token)
