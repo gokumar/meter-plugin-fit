@@ -17,22 +17,24 @@ import sys
 import time
 import json
 import requests
+from requests.packages import urllib3
 import unicodedata
 
 def msToTime(ms):
-    s = float(ms) / 1000000000.0
-    return datetime.datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S.%f')
+    s = float(ms) / 1000000
+    return int(s) #datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S.%f')
 
 def getDataTimes(dataInput):
-    points = dataInput['point']
+    if('point' in dataInput):
+    	points = dataInput['point']
 
-    startMilliseconds = 0
-    endMilliseconds = 0
-    for point in points:
-        if startMilliseconds < point['startTimeNanos']:
-            startMilliseconds = point['startTimeNanos']
-        if endMilliseconds < point['endTimeNanos']:
-            endMilliseconds = point['endTimeNanos']
+    	startMilliseconds = 0
+    	endMilliseconds = 0
+    	for point in points:
+	        if startMilliseconds < point['startTimeNanos']:
+        	    startMilliseconds = point['startTimeNanos']
+	        if endMilliseconds < point['endTimeNanos']:
+	            endMilliseconds = point['endTimeNanos']
     return (len(points), msToTime(startMilliseconds), msToTime(endMilliseconds))
 
 
@@ -64,7 +66,7 @@ class Fitness():
             "grant_type": grant_type
         }
         response = requests.post(url, form)
-        obj = response.content
+        obj = json.loads(response.content)
         accessToken = obj["access_token"]
         return accessToken
 
@@ -83,7 +85,7 @@ class Fitness():
 
                 access_token = self.getRefreshedAccessToken(url, client_id, client_secret, refresh_token, grant_type)
 
-                today = datetime.datetime.utcnow().date()
+                today = datetime.utcnow().date()
                 today_ns = int(today.strftime("%s")) * 1000 * 1000000
 
                 tomorrow = today + timedelta(1)
@@ -98,12 +100,12 @@ class Fitness():
                     start_times, values = extract_data(source_list[i], access_token, time_window)
                     if("merge_heart_rate_bpm" in ds_str ):
                         for indx in range(len(start_times)):
-                            self.sendMeasurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', values[indx], "MyFitness", start_times[indx])
+                            self.sendMeasurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', values[indx][0], "MyFitness", start_times[indx])
                     elif("merge_step_deltas" in ds_str):
                         daily_steps_total = 0
                         for indx in range(len(start_times)):
-                            self.sendMeasurement('GOOGLE_FIT_MERGE_STEP_DELTAS', values[indx], "MyFitness", start_times[indx])
-                            daily_steps_total += values[indx]
+                            self.sendMeasurement('GOOGLE_FIT_MERGE_STEP_DELTAS', values[indx][0], "MyFitness", start_times[indx])
+                            daily_steps_total += int(values[indx][0])
 
                         self.sendMeasurement('GOOGLE_FIT_MERGE_STEP', daily_steps_total, "MyFitness", today_ns / 1000000)
             time.sleep(self.pollInterval)
@@ -113,7 +115,7 @@ def get_information_source_list(accessToken):
     get_datasource_url_tmpl = 'https://www.googleapis.com/fitness/v1/users/me/dataSources?access_token=<accessToken>'
     get_datasource_url = get_datasource_url_tmpl.replace('<accessToken>', accessToken)
     response = requests.get(get_datasource_url)
-    all_sources = response.content
+    all_sources = json.loads(response.content)
     data_sources = []
     for source_list in all_sources['dataSource']:
         data_sources.append(source_list['dataStreamId'])
@@ -129,7 +131,7 @@ def extract_data(dataSource, accessToken, timeWindow):
         .replace('<dataSource>',dataSource) \
         .replace('<timeWindow>',timeWindow)
     response = requests.get(get_dataset_url)
-    dataInput = response.content
+    dataInput = json.loads(response.content)
 
     points = dataInput['point']
 
@@ -157,9 +159,7 @@ def extract_data(dataSource, accessToken, timeWindow):
 
 
 def get_summaries_for_data_sources(dataSources, timeWindow, accessToken):
-    step5CodeTemplate = 'curl '
-    url = "https://www.googleapis.com/fitness/v1/users/me/dataSources/' + \
-    '<dataSource>/datasets/<timeWindow>?access_token=<accessToken>"
+    get_summaries_url_tmpl = "https://www.googleapis.com/fitness/v1/users/me/dataSources/<dataSource>/datasets/<timeWindow>?access_token=<accessToken>"
     nPoints = []
     sourceList = []
     lastBeginTime = []
@@ -167,12 +167,12 @@ def get_summaries_for_data_sources(dataSources, timeWindow, accessToken):
     for dSource in dataSources:
         dsStr = unicodedata.normalize('NFKD', dSource).encode('ascii', 'ignore')
         if ("merge_heart_rate_bpm" in dsStr or "merge_step_deltas" in dsStr):
-            step5 = step5CodeTemplate.replace('<accessToken>', accessToken) \
+            get_summaries_url = get_summaries_url_tmpl.replace('<accessToken>', accessToken) \
                 .replace('<dataSource>', dSource) \
-                .replace('<timeWindow>', timeWindow)
+                .replace('<timeWindow>', timeWindow) 
             try:
-                response = requests.get(step5)
-                dataInput = response.content
+                response = requests.get(get_summaries_url)
+                dataInput = json.loads(response.content)
                 nP, lastBegin, lastEnd = getDataTimes(dataInput)
                 nPoints.append(nP)
                 lastBeginTime.append(lastBegin)
@@ -184,5 +184,6 @@ def get_summaries_for_data_sources(dataSources, timeWindow, accessToken):
 
 
 if __name__ == "__main__":
+    urllib3.disable_warnings()
     plugin = Fitness()
     plugin.run()
