@@ -1,0 +1,60 @@
+{
+  "name" : "TrueSight Pulse Google Fit Plugin",
+  "version" : "0.1.0",
+  "meterVersionRequired" : "4.2.4",
+  "unsupportedPlatforms" : [ ],
+  "tags" : "vmware",
+  "description": "TrueSight Pulse Google Fit Plugin",
+  "icon" : "icon.png",
+  "command": "python index.py",
+  "postExtract": "python post-extract.py",
+
+  "metrics" : [
+    "GOOGLE_FIT_MERGE_STEP_DELTAS",
+    "GOOGLE_FIT_MERGE_HEART_RATE_BPM"
+  ],
+  "dashboards": [
+    {
+      "name": "My Fitness",
+      "layout" : ""
+    }
+  ],
+  "paramArray": {
+    "itemTitle": [
+      "account_name"
+    ],
+    "schemaTitle": "Fitness"
+  },
+  "paramSchema": [
+    {
+      "title": "Account Name",
+      "name": "account_name",
+      "description": "Google API Account Name",
+      "type": "string",
+      "required": true
+    },
+    {
+      "title": "Client ID",
+      "name": "client_id",
+      "description": "Google API Client ID",
+      "type": "string",
+      "required": true
+    },
+    {
+      "title": "Client Secret",
+      "name": "client_secret",
+      "description": "Google API Client Secret",
+      "type": "password",
+      "default": "",
+      "required": true
+    },
+    {
+      "title": "Refresh Token",
+      "name": "refresh_token",
+      "description": "Google API Refresh Token",
+      "type": "string",
+      "default": "",
+      "required": true
+    }
+  ]
+}

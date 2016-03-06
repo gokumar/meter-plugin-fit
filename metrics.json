@@ -1,0 +1,29 @@
+{
+  "GOOGLE_FIT_MERGE_STEP_DELTAS": {
+    "defaultAggregate": "avg",
+    "defaultResolutionMS": 60000,
+    "description": "Step counter delta",
+    "displayName": "Step counter delta",
+    "displayNameShort": "Step counter delta",
+    "metric": "GOOGLE_FIT_MERGE_STEP_DELTAS",
+    "unit": "number"
+  },
+  "GOOGLE_FIT_MERGE_HEART_RATE_BPM": {
+    "defaultAggregate": "avg",
+    "defaultResolutionMS": 3600000,
+    "description": "Heart rate",
+    "displayName": "Heart rate",
+    "displayNameShort": "Heart rate",
+    "metric": "GOOGLE_FIT_MERGE_HEART_RATE_BPM",
+    "unit": "number"
+  },
+  "GOOGLE_FIT_MERGE_STEP": {
+    "defaultAggregate": "avg",
+    "defaultResolutionMS": 86400000,
+    "description": "Step counter cumulative",
+    "displayName": "Step counter cumulative",
+    "displayNameShort": "Step counter total",
+    "metric": "GOOGLE_FIT_MERGE_STEP",
+    "unit": "number"
+  }
+}

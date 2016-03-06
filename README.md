@@ -1,1 +1,3 @@
-Readme
+TrueSight Pulse Google Fit Plugin
+===================================
+
