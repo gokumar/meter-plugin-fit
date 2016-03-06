@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from datetime import timedelta, datetime
+import socket
 import sys
 import time
 import json
@@ -20,21 +21,62 @@ import requests
 from requests.packages import urllib3
 import unicodedata
 
+
 def msToTime(ms):
     s = float(ms) / 1000000
-    return int(s) #datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S.%f')
+    return int(s)  # datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S.%f')
+
+def netcat(hostname, port, content):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((hostname, port))
+    if sys.version_info >= (3, 0, 0):
+        s.sendall(bytes(content, 'UTF-8'))
+    else:
+        s.sendall(content)
+    s.shutdown(socket.SHUT_WR)
+    # print "Connection closed."
+    s.close()
+
+
+def send_event(title, message, type, tags=None):
+    tags = tags or ''
+    event = {'data': '_bevent:{0}|m:{1}|t:{2}|tags:{3}'.format(title, message, type, tags)}
+
+    payload = {
+        "method": "event",
+        "params": event,
+        "jsonrpc": "2.0",
+        "id": 1
+    }
+    netcat("localhost", 9192, json.dumps(payload))
+
+
+def send_measurement(name, value, source, timestamp=''):
+    data_str = '_bmetric:{0}|v:{1}|s:{2}'.format(name, value, source)
+
+    if timestamp is not '':
+        data_str = data_str + '|t:{0}'.format(timestamp)
+
+    data = {'data': data_str}
+    payload = {
+        "method": "metric",
+        "params": data,
+        "jsonrpc": "2.0",
+        "id": 1
+    }
+    netcat("localhost", 9192, json.dumps(payload))
 
 def getDataTimes(dataInput):
-    if('point' in dataInput):
-    	points = dataInput['point']
+    if ('point' in dataInput):
+        points = dataInput['point']
 
-    	startMilliseconds = 0
-    	endMilliseconds = 0
-    	for point in points:
-	        if startMilliseconds < point['startTimeNanos']:
-        	    startMilliseconds = point['startTimeNanos']
-	        if endMilliseconds < point['endTimeNanos']:
-	            endMilliseconds = point['endTimeNanos']
+        startMilliseconds = 0
+        endMilliseconds = 0
+        for point in points:
+            if startMilliseconds < point['startTimeNanos']:
+                startMilliseconds = point['startTimeNanos']
+            if endMilliseconds < point['endTimeNanos']:
+                endMilliseconds = point['endTimeNanos']
     return (len(points), msToTime(startMilliseconds), msToTime(endMilliseconds))
 
 
@@ -96,21 +138,21 @@ class Fitness():
                 source_list = get_summaries_for_data_sources(data_sources, time_window, access_token)
 
                 for i in range(len(source_list)):
-                    ds_str = unicodedata.normalize('NFKD', source_list[i]).encode('ascii','ignore')
+                    ds_str = unicodedata.normalize('NFKD', source_list[i]).encode('ascii', 'ignore')
                     start_times, values = extract_data(source_list[i], access_token, time_window)
-                    if("merge_heart_rate_bpm" in ds_str ):
+                    if ("merge_heart_rate_bpm" in ds_str):
                         for indx in range(len(start_times)):
-                            self.sendMeasurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness")
-                            #self.sendMeasurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness", start_times[indx])
-                    elif("merge_step_deltas" in ds_str):
+                            send_measurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness")
+                            # self.sendMeasurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness", start_times[indx])
+                    elif ("merge_step_deltas" in ds_str):
                         daily_steps_total = 0
                         for indx in range(len(start_times)):
-                            self.sendMeasurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness")
-                            #self.sendMeasurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness", start_times[indx])
+                            send_measurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness")
+                            # self.sendMeasurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness", start_times[indx])
                             daily_steps_total += int(values[indx][0])
 
-                        self.sendMeasurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness")
-                        #self.sendMeasurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", today_ns / 1000000)
+                        send_measurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness")
+                        # self.sendMeasurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", today_ns / 1000000)
             time.sleep(self.pollInterval)
 
 
@@ -127,12 +169,12 @@ def get_information_source_list(accessToken):
 
 def extract_data(dataSource, accessToken, timeWindow):
     get_dataset_url_tmpl = 'https://www.googleapis.com/fitness/v1/users/me/dataSources/<dataSource>/datasets/<timeWindow>' + \
-        '?access_token=<accessToken>'
+                           '?access_token=<accessToken>'
 
     get_dataset_url = get_dataset_url_tmpl \
-        .replace('<accessToken>',accessToken) \
-        .replace('<dataSource>',dataSource) \
-        .replace('<timeWindow>',timeWindow)
+        .replace('<accessToken>', accessToken) \
+        .replace('<dataSource>', dataSource) \
+        .replace('<timeWindow>', timeWindow)
     response = requests.get(get_dataset_url)
     dataInput = json.loads(response.content)
 
@@ -149,7 +191,7 @@ def extract_data(dataSource, accessToken, timeWindow):
         start_times.append(msToTime(point['startTimeNanos']))
         end_milliseconds.append(point['endTimeNanos'])
         end_times.append(msToTime(point['endTimeNanos']))
-        key =[]
+        key = []
         value = []
         for i in range(len(point['value'])):
             key.append(point['value'][i].keys()[0])
@@ -172,7 +214,7 @@ def get_summaries_for_data_sources(dataSources, timeWindow, accessToken):
         if ("merge_heart_rate_bpm" in dsStr or "merge_step_deltas" in dsStr):
             get_summaries_url = get_summaries_url_tmpl.replace('<accessToken>', accessToken) \
                 .replace('<dataSource>', dSource) \
-                .replace('<timeWindow>', timeWindow) 
+                .replace('<timeWindow>', timeWindow)
             try:
                 response = requests.get(get_summaries_url)
                 dataInput = json.loads(response.content)
