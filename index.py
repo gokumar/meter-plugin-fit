@@ -21,6 +21,7 @@ import requests
 from requests.packages import urllib3
 import unicodedata
 
+hostname = socket.gethostname()
 
 def msToTime(ms):
     s = float(ms) / 1000000
@@ -52,7 +53,7 @@ def send_event(title, message, type, tags=None):
 
 
 def send_measurement(name, value, source, timestamp=''):
-    data_str = '_bmetric:{0}|v:{1}|s:{2}'.format(name, value, source)
+    data_str = '_bmetric:{0}|v:{1}|s:{2}'.format(name, value, source + "_" + hostname)
 
     if timestamp is not '':
         data_str = data_str + '|t:{0}'.format(timestamp)
