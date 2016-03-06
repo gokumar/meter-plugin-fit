@@ -100,14 +100,14 @@ class Fitness():
                     start_times, values = extract_data(source_list[i], access_token, time_window)
                     if("merge_heart_rate_bpm" in ds_str ):
                         for indx in range(len(start_times)):
-                            self.sendMeasurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', values[indx][0], "MyFitness", start_times[indx])
+                            self.sendMeasurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness", start_times[indx])
                     elif("merge_step_deltas" in ds_str):
                         daily_steps_total = 0
                         for indx in range(len(start_times)):
-                            self.sendMeasurement('GOOGLE_FIT_MERGE_STEP_DELTAS', values[indx][0], "MyFitness", start_times[indx])
+                            self.sendMeasurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness", start_times[indx])
                             daily_steps_total += int(values[indx][0])
 
-                        self.sendMeasurement('GOOGLE_FIT_MERGE_STEP', daily_steps_total, "MyFitness", today_ns / 1000000)
+                        self.sendMeasurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", today_ns / 1000000)
             time.sleep(self.pollInterval)
 
 
