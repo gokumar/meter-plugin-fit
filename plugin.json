@@ -1,6 +1,6 @@
 {
   "name" : "TrueSight Pulse Google Fit Plugin",
-  "version" : "0.1.0",
+  "version" : "0.1.1",
   "meterVersionRequired" : "4.2.4",
   "unsupportedPlatforms" : [ ],
   "tags" : "vmware",
