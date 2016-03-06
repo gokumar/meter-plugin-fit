@@ -13,12 +13,6 @@
     "GOOGLE_FIT_MERGE_STEP_DELTAS",
     "GOOGLE_FIT_MERGE_HEART_RATE_BPM"
   ],
-  "dashboards": [
-    {
-      "name": "My Fitness",
-      "layout" : ""
-    }
-  ],
   "paramArray": {
     "itemTitle": [
       "account_name"
