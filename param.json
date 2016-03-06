@@ -3,6 +3,7 @@
     "account_name": "Goutham",
     "client_id": "<clientid>",
     "client_secret": "<client_secret>",
-    "refresh_token": "<refresh_token>"
+    "refresh_token": "<refresh_token>",
+    "poll_interval": 300000
   }]
 }
