@@ -150,7 +150,7 @@ class Fitness():
                         for indx in range(len(start_times)):
                             #send_measurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness")
                             self.sendMeasurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness", start_times[indx])
-                            idaily_steps_total += int(values[indx][0])
+                            daily_steps_total += int(values[indx][0])
 
                         #send_measurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness")
                         self.sendMeasurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", today_ns / 1000000)
