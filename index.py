@@ -179,27 +179,28 @@ def extract_data(dataSource, accessToken, timeWindow):
     response = requests.get(get_dataset_url)
     dataInput = json.loads(response.content)
 
-    points = dataInput['point']
+    if('point' in dataInput):
+	points = dataInput['point']
 
-    start_times = []
-    start_milliseconds = []
-    end_times = []
-    end_milliseconds = []
-    keys = []
-    values = []
-    for point in points:
-        start_milliseconds.append(point['startTimeNanos'])
-        start_times.append(msToTime(point['startTimeNanos']))
-        end_milliseconds.append(point['endTimeNanos'])
-        end_times.append(msToTime(point['endTimeNanos']))
-        key = []
-        value = []
-        for i in range(len(point['value'])):
-            key.append(point['value'][i].keys()[0])
-            value.append(point['value'][i].values()[0])
-        if len(keys) == 0:
-            keys = key
-        values.append(value)
+    	start_times = []
+    	start_milliseconds = []
+    	end_times = []
+    	end_milliseconds = []
+    	keys = []
+    	values = []
+    	for point in points:
+            start_milliseconds.append(point['startTimeNanos'])
+            start_times.append(msToTime(point['startTimeNanos']))
+            end_milliseconds.append(point['endTimeNanos'])
+            end_times.append(msToTime(point['endTimeNanos']))
+            key = []
+            value = []
+            for i in range(len(point['value'])):
+            	key.append(point['value'][i].keys()[0])
+            	value.append(point['value'][i].values()[0])
+            if len(keys) == 0:
+            	keys = key
+            values.append(value)
 
     return (start_times, values)
 
