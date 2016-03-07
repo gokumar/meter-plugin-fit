@@ -153,7 +153,6 @@ class Fitness():
 
                         #send_measurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness")
                         send_measurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", today_ns / 1000000)
-	    print self.pollInterval
             time.sleep(self.pollInterval / 1000)
 
 
