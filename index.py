@@ -97,7 +97,7 @@ class Fitness():
 
     def sendMeasurement(self, metric, value, source, timestamp=None):
         """ Sends measurements to standard out to be read by plugin manager"""
-        sys.stdout.write('{0} {1} {2}\n'.format(metric, value, source).decode('utf-8'))
+        sys.stdout.write('{0} {1} {2} {3}\n'.format(metric, value, source, timestamp).decode('utf-8'))
         sys.stdout.flush()
 
     def getRefreshedAccessToken(self, url, client_id, client_secret, refresh_token, grant_type):
@@ -118,6 +118,7 @@ class Fitness():
         self.load_parameters()
         self.send_event("Plugin started", "Starting fitness plugin", "info", int(time.time()))
         while True:
+            print "Looping back"
             # Loop over the items and lookup the fitness data
             for i in self.items:
                 client_id = i['client_id']
@@ -133,28 +134,29 @@ class Fitness():
 
                 tomorrow = today + timedelta(1)
                 tomorrow_ns = int(tomorrow.strftime("%s")) * 1000 * 1000000
-                time_window = str(0) + "-" + str(tomorrow_ns)
+                time_window = str(today_ns) + "-" + str(tomorrow_ns)
 
                 data_sources = get_information_source_list(access_token)
                 source_list = get_summaries_for_data_sources(data_sources, time_window, access_token)
-
+	        print str(source_list) + ">>>>>>>>>>>>>>>>>>>>>>"
                 for i in range(len(source_list)):
                     ds_str = unicodedata.normalize('NFKD', source_list[i]).encode('ascii', 'ignore')
                     start_times, values = extract_data(source_list[i], access_token, time_window)
                     if ("merge_heart_rate_bpm" in ds_str):
                         for indx in range(len(start_times)):
                             #send_measurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness")
-                            self.sendMeasurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness", start_times[indx])
+                            send_measurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness", start_times[indx])
                     elif ("merge_step_deltas" in ds_str):
                         daily_steps_total = 0
                         for indx in range(len(start_times)):
                             #send_measurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness")
-                            self.sendMeasurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness", start_times[indx])
+                            send_measurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness", start_times[indx])
                             daily_steps_total += int(values[indx][0])
 
                         #send_measurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness")
-                        self.sendMeasurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", today_ns / 1000000)
-            time.sleep(self.pollInterval)
+                        send_measurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", today_ns / 1000000)
+	    print self.pollInterval
+            time.sleep(self.pollInterval / 1000)
 
 
 def get_information_source_list(accessToken):
