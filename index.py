@@ -118,7 +118,6 @@ class Fitness():
         self.load_parameters()
         self.send_event("Plugin started", "Starting fitness plugin", "info", int(time.time()))
         while True:
-            print "Looping back"
             # Loop over the items and lookup the fitness data
             for i in self.items:
                 client_id = i['client_id']
@@ -138,7 +137,6 @@ class Fitness():
 
                 data_sources = get_information_source_list(access_token)
                 source_list = get_summaries_for_data_sources(data_sources, time_window, access_token)
-	        print str(source_list) + ">>>>>>>>>>>>>>>>>>>>>>"
                 for i in range(len(source_list)):
                     ds_str = unicodedata.normalize('NFKD', source_list[i]).encode('ascii', 'ignore')
                     start_times, values = extract_data(source_list[i], access_token, time_window)
