@@ -56,7 +56,7 @@ def send_event(title, message, type, tags=None):
 
 
 def send_measurement(name, value, source, timestamp=''):
-    data_str = '_bmetric:{0}|v:{1}|s:{2}'.format(name, value, source + "_" + hostname)
+    data_str = '_bmetric:{0}|v:{1}|s:{2}'.format(name, value, source)
 
     if timestamp is not '':
         data_str = data_str + '|t:{0}'.format(timestamp)
@@ -145,24 +145,21 @@ class Fitness():
                     start_times, values = extract_data(source_list[i], access_token, time_window)
                     if ("merge_heart_rate_bpm" in ds_str):
                         for indx in range(len(start_times)):
-                            self.sendMeasurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness", start_times[indx])
+                            send_measurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness", start_times[indx])
                             # self.sendMeasurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness", start_times[indx])
                     elif ("merge_step_deltas" in ds_str):
                         daily_steps_total = 0
                         current_date = datetime.fromtimestamp(start_times[0] / 1000).date()
                         for indx in range(len(start_times)):
-                            self.sendMeasurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness", start_times[indx])
+                            send_measurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness", start_times[indx])
                             date = datetime.fromtimestamp(start_times[indx] / 1000).date()
                             if(current_date != date):
-				print current_date
-				print date
-                                self.sendMeasurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", getmillis(current_date.year, current_date.month, current_date.day, 23, 59, 59))
+                                send_measurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", getmillis(current_date.year, current_date.month, current_date.day, 23, 59, 59))
                                 current_date = date
                                 daily_steps_total = 0
                             elif(indx == len(start_times) - 1):
-				print "reached last"
                                 daily_steps_total += int(values[indx][0])
-                                self.sendMeasurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", getmillis(date.year, date.month, date.day, 23, 59, 59))
+                                send_measurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", getmillis(date.year, date.month, date.day, 23, 59, 59))
                             else:
                                 daily_steps_total += int(values[indx][0])
             time.sleep(self.pollInterval / 1000)
