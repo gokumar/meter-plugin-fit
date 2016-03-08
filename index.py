@@ -133,7 +133,7 @@ class Fitness():
 
                 tomorrow = today + timedelta(1)
                 tomorrow_ns = int(tomorrow.strftime("%s")) * 1000 * 1000000
-                time_window = str(today_ns) + "-" + str(tomorrow_ns)
+                time_window = str(0) + "-" + str(tomorrow_ns)
 
                 data_sources = get_information_source_list(access_token)
                 source_list = get_summaries_for_data_sources(data_sources, time_window, access_token)
@@ -142,17 +142,23 @@ class Fitness():
                     start_times, values = extract_data(source_list[i], access_token, time_window)
                     if ("merge_heart_rate_bpm" in ds_str):
                         for indx in range(len(start_times)):
-                            #send_measurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness")
-                            send_measurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness", start_times[indx])
+                            self.sendMeasurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness", start_times[indx])
+                            # self.sendMeasurement('GOOGLE_FIT_MERGE_HEART_RATE_BPM', str(values[indx][0]), "MyFitness", start_times[indx])
                     elif ("merge_step_deltas" in ds_str):
                         daily_steps_total = 0
+                        current_day = start_times[0]
                         for indx in range(len(start_times)):
-                            #send_measurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness")
-                            send_measurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness", start_times[indx])
-                            daily_steps_total += int(values[indx][0])
-
-                        #send_measurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness")
-                        send_measurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", today_ns / 1000000)
+                            self.sendMeasurement('GOOGLE_FIT_MERGE_STEP_DELTAS', str(values[indx][0]), "MyFitness", start_times[indx])
+                            date = datetime.fromtimestamp(start_times[indx])
+                            if((current_day is not date.day)):
+                                current_day = date.day
+                                self.sendMeasurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", datetime(date.year, date.month, date.day, 23, 59, 59))
+                                daily_steps_total = 0
+                            elif(indx == len(start_times) - 1):
+                                daily_steps_total += int(values[indx][0])
+                                self.sendMeasurement('GOOGLE_FIT_MERGE_STEP', str(daily_steps_total), "MyFitness", datetime(date.year, date.month, date.day, 23, 59, 59))
+                            else:
+                                daily_steps_total += int(values[indx][0])
             time.sleep(self.pollInterval / 1000)
 
 
